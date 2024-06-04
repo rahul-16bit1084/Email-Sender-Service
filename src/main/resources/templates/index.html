@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.ckeditor.com/ckeditor5/34.2.0/classic/ckeditor.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn-container {
+            text-align: center;
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .ck-editor__editable {
+            min-height: 400px; /* Adjust this value as needed */
+        }
+    </style>
+    <title>Email Sender App</title>
+</head>
+<body>
+<div class="form-container">
+    <form id="emailForm">
+        <div>
+            <h1>Email Sender App</h1>
+        </div>
+        <div class="mb-3">
+            <label for="inputEmail" class="form-label">To</label>
+            <input type="email" class="form-control" id="inputEmail" placeholder="Recipient's email address" required>
+        </div>
+        <div class="mb-3">
+            <label for="inputSubject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="inputSubject" placeholder="Email subject" required>
+        </div>
+        <div class="mb-3">
+            <label for="inputMessage" class="form-label">Message</label>
+            <textarea class="form-control" id="inputMessage" placeholder="Write your message here" required></textarea>
+        </div>
+        <div class="btn-container">
+            <button type="submit" class="btn btn-primary btn-custom">Submit</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('emailForm').reset(); editor.setData('');">Clear</button>
+        </div>
+    </form>
+</div>
+<script>
+    let editor;
+    ClassicEditor
+        .create(document.querySelector('#inputMessage'), {
+            height: '400px'
+        })
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+    document.getElementById('emailForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const to = document.getElementById('inputEmail').value;
+        const subject = document.getElementById('inputSubject').value;
+        const message = editor.getData();
+
+        const emailRequest = {
+            to: to,
+            subject: subject,
+            message: message
+        };
+
+        fetch('http://localhost:1010/api/email/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(emailRequest),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Email sent successfully!');
+            document.getElementById('emailForm').reset();
+            editor.setData('');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Failed to send email');
+        });
+    });
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
